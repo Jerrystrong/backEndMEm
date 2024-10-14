@@ -5,7 +5,7 @@ const sendMail=require('../mail/sendMail')
 const singUp=async (req,res)=>{
     const {userEmail,userNom,userGenre,userAge,userAccountType,userName,userPw,userPwConf,userProfil}=req.body 
     if(!userEmail||!userNom||!userGenre||!userAccountType||!userName||!userPw||!userPwConf){
-        res.status(400).json({message:"Tout les champs doivent etre ramplie"})
+        res.status(400).json({status:"failed",message:"Tout les champs doivent etre ramplie"})
     }
     else{
         try{
@@ -20,7 +20,7 @@ const singUp=async (req,res)=>{
                 const genSalt=await bcrypt.genSalt(10)
                 const hashPw=await bcrypt.hash(userPw,genSalt)
                 const verificationToken= Math.floor(10000+Math.random()*90000).toString()
-                const verificationExpireAt=Date.now()+24*60*60*1000
+                const verificationExpireAt=Date.now()+15*60*1000
                 const user= new User({
                     userEmail,
                     userNom,
@@ -49,7 +49,7 @@ const singUp=async (req,res)=>{
             }
         }
         catch(e){
-            return res.status(400).json({message:e.message})
+            return res.status(400).json({status:"failed",message:e.message})
         }
     }
     

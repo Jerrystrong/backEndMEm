@@ -5,25 +5,29 @@ const sendMail=require('../mail/sendMail')
 const singUp=require('./singUp')
 module.exports.singin=async (req,res)=>{
     const {userEmail,userPw}=req.body
+    console.log(`${userEmail} ${userPw}`)
     const user=await User.findOne({userEmail})
+    if(!userEmail || !userPw) return res.status(404).json({
+        status:"failled",
+        message:"Tout les champs doivent etre remplis"
+    })
     if(!user) return res.status(404).json({
-        status:"success",
+        status:"failled",
         message:"Compte n'existe pas"
     })
 
     const matchUser= await bcrypt.compare(userPw,user.userPw)
-    if(!matchUser) return res.status(404).json({
-        status:"success",
+    if(!matchUser) return res.status(401).json({
+        status:"failed",
         message:"Le mot de passe ne correspond à aucun compte"
     })
     generateTokenAndcookie(res,user._id)
-    res.status(201).json({
+    res.status(200).json({
         status:'success',
         Data:{
             ...user._doc,
             userPw:null
-        },
-        state:'waiting for confirmation'
+        }
     })
 }
 module.exports.singup= singUp
@@ -65,5 +69,28 @@ module.exports.verication=async (req,res)=>{
             status:"failed",
             message:"code de verification invalide ou déjà expiré"
         })  
+    }
+}
+module.exports.checkAuotisation=async(req,res)=>{
+    console.log(req.userId)
+    try{
+        const user=await User.findById(req.userId).select("-userPw")
+        // console.log(user)
+        if(!user) return res.status(404).json({
+            status:"failed",
+            message:"invalid credential"
+        })
+        res.status(200).json({
+            status:"success",
+            data:{
+                ...user._doc
+            }
+        })
+    
+    }catch(e){
+        res.status(404).json({
+            status:"failed",
+            message:"invalid credential error"
+        })
     }
 }
