@@ -38,8 +38,38 @@ module.exports.logout=(req,res)=>{
         message:"User loged out"
     })
 }
-module.exports.pameter=(req,res)=>{
-    res.send('parameter'+req.params.id)
+module.exports.pameter=async (req,res)=>{
+    const {id}=req.params
+    const user= await User.findById(id).select("-userPw")
+    if(!user) return res.status(404).json({status:"failed",message:"id incorect"}) 
+   
+    res.status(200).json({status:"success",data:{
+        ...user._doc
+    }})
+}
+module.exports.family=async (req,res)=>{
+    const {id}=req.params
+    const {member}=req.body
+    const user= await User.findById(id).select("-userPw")
+    if(!user) return res.status(404).json({status:"failed",message:"id incorect"}) 
+//    console.log(user.famillyMember)
+    user.famillyMember.push(member)
+    user.save()
+    res.status(200).json({status:"success",data:{
+        ...user._doc
+    }})
+}
+module.exports.device=async (req,res)=>{
+    const {id}=req.params
+    const {member}=req.body
+    const user= await User.findById(id).select("-userPw")
+    if(!user) return res.status(404).json({status:"failed",message:"id incorect"}) 
+//    console.log(user.famillyMember)
+    user.userDevices.push(member)
+    user.save()
+    res.status(200).json({status:"success",data:{
+        ...user._doc
+    }})
 }
 module.exports.live=(req,res)=>{
     res.send('live')
