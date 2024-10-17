@@ -77,6 +77,27 @@ module.exports.live=(req,res)=>{
 module.exports.historique=(req,res)=>{
     res.send('historique')
 }
+module.exports.resendCode=async (req,res)=>{
+    const {id}=req.body
+    const user=await User.findById(id)
+    if(!user) return res.status(404).json({
+        status:"failled",
+        message:"User not found"
+    })
+    // renvoie du nouveau code 
+    const verificationToken= Math.floor(10000+Math.random()*90000).toString()
+    const verificationExpireAt=Date.now()+15*60*1000
+    user.verificationToken=verificationToken
+    user.verificationExpireAt=verificationExpireAt
+    user.save()
+    sendMail(user.userEmail,user.verificationToken).catch(e=>{
+        console.log("sending email Error"+e)
+    })
+    res.json({
+        status:"success",
+        message:"new code send"
+    })
+}
 module.exports.verication=async (req,res)=>{
     const {code}=req.body
     const user=await User.findOne({verificationToken:code,verificationExpireAt:{$gt:Date.now()}})
@@ -89,6 +110,7 @@ module.exports.verication=async (req,res)=>{
         await user.save()
         res.status(200).json({
             status:"success",
+            message:"Compte verifié",
             Data:{
                 ...user._doc,
                 userPw:null

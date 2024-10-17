@@ -12,5 +12,6 @@ router.post('/app/:id/live',authControler.live)
 router.post('/app/:id/historique',authControler.historique)
 router.post('/verificationAccount',authControler.verication)
 router.get('/checkRoute',checkToken,authControler.checkAuotisation)
+router.post('/resendCode',authControler.resendCode)
 
 module.exports=router

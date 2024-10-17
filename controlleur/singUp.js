@@ -20,7 +20,7 @@ const singUp=async (req,res)=>{
                 const genSalt=await bcrypt.genSalt(10)
                 const hashPw=await bcrypt.hash(userPw,genSalt)
                 const verificationToken= Math.floor(10000+Math.random()*90000).toString()
-                const verificationExpireAt=Date.now()+15*60*1000
+                const verificationExpireAt=Date.now()+10*60*1000
                 const user= new User({
                     userEmail,
                     userNom,
