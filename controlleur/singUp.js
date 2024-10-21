@@ -1,9 +1,13 @@
 const User=require('../model/User')
 const bcrypt=require('bcrypt')
+const path=require('path')
 const generateTokenAndcookie=require('../util/generateTokenAndcookie')
 const sendMail=require('../mail/sendMail')
 const singUp=async (req,res)=>{
-    const {userEmail,userNom,userGenre,userAge,userAccountType,userName,userPw,userPwConf,userProfil}=req.body 
+    const {userEmail,userNom,userGenre,userAge,userAccountType,userName,userPw,userPwConf}=req.body 
+    const {userProfil}=req.files
+    const userProfill=userProfil.name
+    const userProfilType=userProfil.mimetype
     if(!userEmail||!userNom||!userGenre||!userAccountType||!userName||!userPw||!userPwConf){
         res.status(400).json({status:"failed",message:"Tout les champs doivent etre ramplie"})
     }
@@ -29,7 +33,7 @@ const singUp=async (req,res)=>{
                     userAccountType,
                     userName,
                     userPw:hashPw,
-                    userProfil,
+                    userProfil:userProfill,
                     verificationToken,
                     verificationExpireAt
                 })
@@ -37,6 +41,10 @@ const singUp=async (req,res)=>{
                 generateTokenAndcookie(res,user._id)
                 sendMail(user.userEmail,user.verificationToken).catch(e=>{
                     console.log("sending email Error"+e)
+                })
+                const patht=path.join(__dirname,'files',userProfil.name)
+                userProfil.mv(patht,(err)=>{
+                    if(err) return res.status(500).json({status:'error',message:err})
                 })
                 res.status(201).json({
                     status:'success',

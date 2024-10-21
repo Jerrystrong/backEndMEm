@@ -5,10 +5,16 @@ const path=require('path')
 const connectionDb=require('./config/connectionDb')
 const authRouter=require('./routes/authRoute')
 const cookieParser = require('cookie-parser')
+const fileUpload=require('express-fileupload')
 const app=express()
 const Port=process.env.PORT||4005
 const User=require('./model/User')
 const bcrypt=require('bcrypt')
+const authControler=require('./controlleur/authControler')
+const checkToken=require('./middleware/checkToken')
+const fileLimit=require('./middleware/fileLimit')
+const noFile=require('./middleware/noFile')
+const allowedExt=require('./middleware/allowedExt')
 dotEnv.config()
 // configurer cors(Cross-Origin Resource Sharing (CORS)) pour la communication client serveur pour proteger notre api contre le requete des autres plateformCORS, ou Cross-Origin Resource Sharing, est un mécanisme de sécurité mis en œuvre par les navigateurs web pour restreindre l'accès aux ressources provenant de domaines différents. Son objectif principal est de prévenir des attaques malveillantes telles que le cross-site scripting (XSS) et le cross-site request forgery (CSRF)
 const allowedOrigins=['https://unrivaled-crostata-6fb029.netlify.app','http://localhost:5173','http://localhost:4005']
@@ -27,11 +33,15 @@ const corsOption={
 connectionDb()
 // all middleware
 app.use(express.static(path.join(__dirname,'public')))
+app.use(express.static(path.join(__dirname,'controlleur/files')))
 app.use(Cors(corsOption))
 app.use(express.json())
-app.use(express.urlencoded({extends:false}))
+// app.use(express.urlencoded({extended:false}))
+app.use(express.urlencoded({extended:false}))
 app.use(cookieParser())
+// app.use(fileupload)
 app.use(authRouter)
+app.post('/singup',fileUpload({ createParentPath: true }),noFile,fileLimit,allowedExt(['.jpg','.jpeg','.png','.gif']),authControler.singup)
 app.post('/login', async (req, res) => {
     const { userEmail, userPw } = req.body;
     console.log(`${userEmail} ${userPw}`);
